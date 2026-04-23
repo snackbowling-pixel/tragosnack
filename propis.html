@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Alias Mozos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --gold: #B8973A;
+    --gold-dark: #8E722A;
+    --gold-soft: rgba(184, 151, 58, 0.1);
+    --dark: #1F1F1E;
+    --mid: #7A766F;
+    --light: #F8F6F2;
+    --white: #FFFFFF;
+    --shadow-sm: 0 4px 12px rgba(0,0,0,0.03);
+    --radius: 20px;
+    --matrix: #00ff41;
+  }
+
+  body { 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    background-color: var(--light); 
+    color: var(--dark); 
+    min-height: 100vh; 
+    overflow-x: hidden;
+  }
+
+  #ui-layer { transition: all 0.4s ease; width: 100%; padding-bottom: 20px; }
+  .hidden { opacity: 0 !important; transform: scale(0.98); pointer-events: none; }
+
+  header { 
+    background: var(--white); 
+    padding: 20px 20px 12px;
+    text-align: center; 
+    border-bottom: 1px solid rgba(184, 151, 58, 0.1);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .logo-space { 
+    width: 70px; height: 70px; 
+    border-radius: 50%; /* Logo estrictamente circular */
+    margin: 0 auto 10px; 
+    overflow: hidden; 
+    border: 2px solid var(--gold-soft);
+    background: white;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-space img { width: 85%; height: 85%; object-fit: contain; }
+
+  h1 { 
+    font-size: 28px; 
+    font-weight: 700; 
+    margin-bottom: 2px;
+    letter-spacing: -0.5px;
+  }
+  h1 span { color: var(--gold); }
+  .subtitle { font-size: 9px; color: var(--mid); letter-spacing: 3px; text-transform: uppercase; font-weight: 600; }
+
+  main { padding: 12px 16px 0; max-width: 480px; margin: 0 auto; }
+
+  .mozo-item { 
+    background: var(--white); 
+    border-radius: var(--radius); 
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+  }
+
+  .mozo-btn { 
+    width: 100%; background: none; border: none; 
+    padding: 14px 18px; display: flex; align-items: center; 
+    justify-content: space-between; cursor: pointer; 
+  }
+
+  .avatar { 
+    width: 38px; height: 38px; 
+    border-radius: 10px; 
+    background: var(--gold-soft); 
+    display: flex; align-items: center; justify-content: center; 
+    font-weight: 700; color: var(--gold-dark);
+    font-size: 15px;
+  }
+
+  .mozo-name { font-weight: 600; font-size: 16px; color: var(--dark); margin-left: 14px; flex: 1; text-align: left; }
+
+  .chevron { color: var(--gold); opacity: 0.5; transition: transform 0.3s; }
+  .open .chevron { transform: rotate(180deg); opacity: 1; }
+
+  /* Panel de Alias con TIPOGRAFÍA MEJORADA */
+  .alias-panel { max-height: 0; overflow: hidden; transition: all 0.3s ease; background: #FAF9F6; border-radius: 0 0 var(--radius) var(--radius); }
+  .alias-panel.open { max-height: 100px; }
+  .alias-inner { padding: 0 18px 18px; }
+  
+  .alias-row { 
+    display: flex; align-items: center; gap: 8px; 
+    background: white; 
+    border: 1px solid rgba(184, 151, 58, 0.2);
+    border-radius: 12px; padding: 6px 6px 6px 14px; margin-top: 4px; 
+  }
+
+  /* Tipografía Roboto Mono para máxima legibilidad */
+  .alias-text { 
+    font-family: 'Roboto Mono', monospace; 
+    font-size: 15px; 
+    font-weight: 700; 
+    flex: 1; 
+    color: var(--dark);
+    letter-spacing: -0.2px;
+  }
+  
+  .copy-btn { 
+    background: var(--gold); color: white; border: none; 
+    padding: 8px 12px; border-radius: 9px; cursor: pointer; 
+    font-weight: 700; font-size: 11px; text-transform: uppercase;
+  }
+
+  footer { text-align: center; padding: 25px 0; font-size: 11px; color: var(--mid); cursor: pointer; opacity: 0.6; }
+
+  /* Juego */
+  body.matrix-mode { background-color: #000 !important; cursor: none; }
+  #score-ui { position: fixed; top: 20px; right: 20px; color: var(--matrix); font-family: 'Roboto Mono', monospace; font-size: 20px; z-index: 10002; display: none; }
+</style>
+</head>
+<body>
+
+<div id="score-ui">SCORE: <span id="pts">0</span></div>
+
+<div id="ui-layer">
+  <header>
+    <div class="logo-space"><img src="https://tucumple.com.ar/ristrel/images/logoS.png" alt="Logo"></div>
+    <h1>Alias <span>Mozos</span></h1>
+    <p class="subtitle">Propinas</p>
+  </header>
+  
+  <main><div class="mozo-list" id="mozoList"></div></main>
+
+  <footer onmousedown="supernova(event)">BY EL CHAPU 👍</footer>
+</div>
+
+<script>
+  const mozos = [
+    { nombre: "Adrian", alias: "adri.lobo.mp" }, 
+    { nombre: "Andriana", alias: "Adri.1981" },
+    { nombre: "Yamile", alias: "yami.2405" }, 
+    { nombre: "Micaela", alias: "mica.b.mp" },
+    { nombre: "Walter Díaz", alias: "walteromardiaz" }, 
+    { nombre: "Walter Hugo", alias: "djgrati.mp" },
+    { nombre: "Carina", alias: "Carina.lorena.2015" }
+  ];
+
+  function buildList() {
+    const list = document.getElementById('mozoList');
+    mozos.forEach((m, i) => {
+      const item = document.createElement('div');
+      item.className = 'mozo-item';
+      item.innerHTML = `
+        <button class="mozo-btn" onclick="toggleItem(${i})">
+          <div style="display:flex; align-items:center; flex:1;">
+            <div class="avatar">${m.nombre[0]}</div>
+            <span class="mozo-name">${m.nombre}</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron" size="18"></i>
+        </button>
+        <div class="alias-panel" id="panel-${i}">
+          <div class="alias-inner">
+            <div class="alias-row">
+              <div class="alias-text">${m.alias}</div>
+              <button class="copy-btn" onclick="copyAlias(this, '${m.alias}')">Copiar</button>
+            </div>
+          </div>
+        </div>`;
+      list.appendChild(item);
+    });
+    lucide.createIcons();
+  }
+
+  let openIndex = null;
+  function toggleItem(i) {
+    if(isMatrix) return;
+    const panels = document.querySelectorAll('.alias-panel');
+    if (openIndex === i) { 
+      panels[i].classList.remove('open'); openIndex = null; 
+    } else { 
+      if (openIndex !== null) panels[openIndex].classList.remove('open');
+      panels[i].classList.add('open'); openIndex = i; 
+      launchCoins(); 
+    }
+  }
+
+  function copyAlias(btn, alias) { 
+    navigator.clipboard.writeText(alias); 
+    const prev = btn.textContent;
+    btn.textContent = 'OK!'; btn.style.background = '#28a745';
+    setTimeout(() => { btn.textContent = prev; btn.style.background = 'var(--gold)'; }, 1500); 
+  }
+
+  // --- MOTOR DE JUEGO (Mantiene explosiones y sacudidas) ---
+  const canvas = document.createElement('canvas');
+  Object.assign(canvas.style, { position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', pointerEvents: 'none', zIndex: '9999' });
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  
+  let isMatrix = false, score = 0, animId = null, gameOverActive = false;
+  let shake = 0, ship = { x: -100, y: -100, alive: true }, lasers = [], particles = [], asteroids = [], coins = [];
+  let mouse = { x: -100, y: -100 };
+
+  function launchCoins() {
+    for (let i = 0; i < 70; i++) {
+      coins.push({ 
+        x: Math.random() * canvas.width, y: -20, 
+        vy: 5 + Math.random() * 5, vx: (Math.random() - 0.5) * 4, 
+        size: 4 + Math.random() * 4,
+        color: ['#B8973A','#D4AF37','#FFD700'][Math.floor(Math.random()*3)],
+        angle: Math.random() * Math.PI, spinSpeed: 0.15 + Math.random() * 0.15
+      });
+    }
+    if(!animId) animate();
+  }
+
+  function triggerExplosion(x, y, color, count) {
+    for(let p=0; p<count; p++) {
+      particles.push({ x, y, vx:(Math.random()-0.5)*12, vy:(Math.random()-0.5)*12, life:1, color });
+    }
+  }
+
+  function supernova() {
+    if(isMatrix) return;
+    isMatrix = true; ship.alive = true; gameOverActive = false;
+    document.getElementById('pts').innerText = "0";
+    document.getElementById('score-ui').style.display = "block";
+    document.body.classList.add('matrix-mode');
+    document.getElementById('ui-layer').classList.add('hidden');
+    canvas.style.pointerEvents = "auto";
+    ship.x = window.innerWidth / 2; ship.y = window.innerHeight / 2;
+    asteroids = [];
+    for(let i=0; i<6; i++) spawnAsteroid();
+    if(!animId) animate();
+  }
+
+  function spawnAsteroid() {
+    asteroids.push({
+      x: Math.random() * (window.innerWidth - 40), y: -80,
+      size: 40, speed: 2.5 + Math.random() * 2,
+      char: String.fromCharCode(0x30A0 + Math.random()*96)
+    });
+  }
+
+  function animate() {
+    ctx.save();
+    if(shake > 0) { ctx.translate((Math.random()-0.5)*shake, (Math.random()-0.5)*shake); shake *= 0.85; }
+    if (isMatrix) { ctx.fillStyle = "rgba(0, 0, 0, 0.4)"; ctx.fillRect(0, 0, canvas.width, canvas.height); } 
+    else { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    coins.forEach((c, i) => {
+      c.y += c.vy; c.x += c.vx; c.angle += c.spinSpeed;
+      const curW = Math.cos(c.angle) * c.size;
+      ctx.fillStyle = c.color;
+      ctx.beginPath(); ctx.ellipse(c.x, c.y, Math.abs(curW)+1, c.size, 0, 0, Math.PI*2); ctx.fill();
+      if(c.y > canvas.height + 20) coins.splice(i, 1);
+    });
+
+    if(isMatrix) {
+      if(ship.alive) {
+        ship.x += (mouse.x - ship.x) * 0.15; ship.y += (mouse.y - ship.y) * 0.15;
+        ctx.fillStyle = "#fff"; ctx.fillRect(ship.x-15, ship.y, 30, 10);
+        ctx.fillRect(ship.x-4, ship.y-10, 8, 10);
+      }
+      asteroids.forEach(ast => {
+        ast.y += ast.speed;
+        ctx.strokeStyle = "#0f0"; ctx.strokeRect(ast.x, ast.y, ast.size, ast.size);
+        ctx.fillStyle = "#0f0"; ctx.font = "20px monospace"; ctx.fillText(ast.char, ast.x+12, ast.y+28);
+        if(ship.alive && ast.x < ship.x+15 && ast.x+ast.size > ship.x-15 && ast.y < ship.y+10 && ast.y+ast.size > ship.y-10) {
+          ship.alive = false; shake = 25;
+          triggerExplosion(ship.x, ship.y, "#fff", 25); triggerExplosion(ship.x, ship.y, "#f00", 15);
+          if(!gameOverActive) { gameOverActive = true; setTimeout(() => { location.reload(); }, 1200); }
+        }
+        if(ast.y > canvas.height) { ast.y = -80; ast.x = Math.random()*(canvas.width-40); }
+      });
+      lasers.forEach((l, li) => {
+        l.y -= 18; ctx.fillStyle = "#0ff"; ctx.fillRect(l.x-1, l.y, 3, 15);
+        asteroids.forEach((ast, ai) => {
+          if(l.x > ast.x && l.x < ast.x + ast.size && l.y > ast.y && l.y < ast.y + ast.size) {
+            triggerExplosion(ast.x+20, ast.y+20, "#0f0", 10);
+            asteroids.splice(ai, 1); lasers.splice(li, 1);
+            score += 100; document.getElementById('pts').innerText = score;
+            spawnAsteroid();
+          }
+        });
+        if(l.y < -20) lasers.splice(li, 1);
+      });
+    }
+    particles.forEach((p, pi) => {
+      p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+      ctx.fillStyle = p.color || "#0f0"; ctx.globalAlpha = p.life;
+      ctx.fillRect(p.x, p.y, 2, 2); ctx.globalAlpha = 1;
+      if(p.life <= 0) particles.splice(pi, 1);
+    });
+    ctx.restore();
+    if (coins.length > 0 || isMatrix || particles.length > 0) animId = requestAnimationFrame(animate);
+    else { ctx.clearRect(0, 0, canvas.width, canvas.height); animId = null; }
+  }
+
+  window.addEventListener('mousedown', () => { if(isMatrix && ship.alive) lasers.push({ x: ship.x, y: ship.y - 10 }); });
+  window.addEventListener('touchstart', (e) => { 
+    if(isMatrix && ship.alive) { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; lasers.push({ x: ship.x, y: ship.y - 10 }); }
+  });
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  window.onresize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+  window.onresize();
+  buildList();
+</script>
+</body>
+</html>
