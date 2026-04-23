@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carta de Tragos - SNACK Ristrel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gold: #c9a66b;
+            --bg: #121212;
+            --card: rgba(255, 255, 255, 0.04);
+            --text: #ffffff;
+            --dim: #a0a0a0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Lexend Deca', sans-serif;
+            margin: 0; padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+        header { text-align: center; padding: 30px 0 10px; }
+        .logo-img { width: 180px; height: auto; margin-bottom: 15px; transition: 0.3s; }
+        .logo-img:hover { transform: scale(1.05); }
+        h1 { font-size: 1.6rem; letter-spacing: 5px; color: var(--gold); text-transform: uppercase; margin: 0 0 25px 0; }
+
+        /* BUSCADOR Y FILTROS */
+        .controls-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+
+        #itemSearch {
+            width: 100%;
+            padding: 14px 25px;
+            border-radius: 30px;
+            border: 1px solid rgba(201, 166, 107, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        #itemSearch:focus { border-color: var(--gold); box-shadow: 0 0 15px rgba(201, 166, 107, 0.2); }
+
+        .filter-pills {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .pill {
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(201, 166, 107, 0.15);
+            color: var(--dim);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .pill.active {
+            background: var(--gold);
+            color: #000;
+            border-color: var(--gold);
+            font-weight: 600;
+        }
+
+        /* GRILLA */
+        .section-title {
+            font-size: 1.1rem; color: var(--gold);
+            text-transform: uppercase; letter-spacing: 3px;
+            margin: 40px 0 20px; border-left: 3px solid var(--gold); padding-left: 15px;
+        }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+
+        .item {
+            background: var(--card); padding: 18px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .hidden { display: none !important; }
+
+        .item-top { display: flex; justify-content: space-between; align-items: baseline; }
+        .name { font-weight: 600; font-size: 0.95rem; text-transform: uppercase; color: #fff; line-height: 1.2; }
+        .price { color: var(--gold); font-weight: 600; font-size: 1rem; margin-left: 10px; white-space: nowrap; }
+        .desc { font-size: 0.85rem; color: var(--dim); font-style: italic; margin-top: 5px; line-height: 1.4; }
+
+        #noResults { text-align: center; padding: 40px; color: var(--dim); display: none; }
+        
+        .cta-container { text-align: center; margin: 60px 0; }
+        .btn-full-menu {
+            border: 2px solid var(--gold); padding: 16px 32px; border-radius: 50px;
+            color: var(--gold); text-decoration: none; text-transform: uppercase; font-weight: 600; transition: 0.3s;
+        }
+        .btn-full-menu:hover { background: var(--gold); color: #000; }
+        
+        footer { text-align: center; padding-bottom: 60px; font-size: 0.7rem; color: var(--dim); letter-spacing: 2px; }
+
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .btn-full-menu { display: block; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+<h1>Carta de Tragos</h1>
+        <a href="https://snackbowling.netlify.app/">
+            <img src="https://snackbowling.netlify.app/images/logo2.svg" class="logo-img" alt="SNACK">
+        </a>
+        
+    </header>
+
+    <div class="controls-wrapper">
+        <input type="text" id="itemSearch" placeholder="Busca tu trago o ingrediente...">
+        <div class="filter-pills">
+            <div class="pill active" data-filter="all">Todos</div>
+            <div class="pill" data-filter="cerveza">Cervezas</div>
+            <div class="pill" data-filter="gin">Gin</div>
+            <div class="pill" data-filter="vodka">Vodka</div>
+            <div class="pill" data-filter="ron">Ron</div>
+            <div class="pill" data-filter="aperitivo">Aperitivos</div>
+            <div class="pill" data-filter="frutal">Frutales</div>
+        </div>
+    </div>
+
+    <div id="noResults">No hay coincidencias para tu búsqueda.</div>
+
+
+
+    <div class="menu-section">
+        <div class="section-title">Tragos Nacionales</div>
+        <div class="grid">
+            <div class="item" data-tags="aperitivo spritz"><div class="item-top"><span class="name">Aperol Spritz</span><span class="price">$9.000</span></div><div class="desc">Aperol, espumante y soda</div></div>
+            <div class="item" data-tags="aperitivo gancia"><div class="item-top"><span class="name">Batido de Gancia</span><span class="price">$9.000</span></div><div class="desc">Gancia + azucar + limon</div></div>
+            <div class="item" data-tags="aperitivo campari"><div class="item-top"><span class="name">Campari con Naranja</span><span class="price">$8.000</span></div></div>
+            <div class="item" data-tags="aperitivo cynar frutal pomelo"><div class="item-top"><span class="name">Cynar Julep</span><span class="price">$8.000</span></div><div class="desc">Hojas de menta, azucar, jugo de limon, cynar, jugo de pomelo rosado</div></div>
+            <div class="item" data-tags="aperitivo cynar pomelo"><div class="item-top"><span class="name">Cynar Pomelo</span><span class="price">$8.000</span></div><div class="desc">Cynar + paso los toros pomelo</div></div>
+            <div class="item" data-tags="ron frutal daikiri frutilla rojos maracuya anana"><div class="item-top"><span class="name">Daikiri</span><span class="price">$8.500</span></div><div class="desc">Ron + pulpa a eleccion (frutilla, frutos rojos, maracuya o anana)</div></div>
+            <div class="item" data-tags="vodka naranja"><div class="item-top"><span class="name">Destornillador</span><span class="price">$8.000</span></div><div class="desc">Jugo de naranja + vodka</div></div>
+            <div class="item" data-tags="aperitivo fernet pepsi"><div class="item-top"><span class="name">Fernet con Pepsi</span><span class="price">$8.000</span></div></div>
+            <div class="item" data-tags="gin tonic frutal rojos"><div class="item-top"><span class="name">Gin Tonic con Frutos Rojos</span><span class="price">$9.000</span></div></div>
+            <div class="item" data-tags="gin tonic nacional"><div class="item-top"><span class="name">Gin Tonic Nacional</span><span class="price">$8.000</span></div></div>
+            <div class="item" data-tags="ron mojito menta lima"><div class="item-top"><span class="name">Mojito</span><span class="price">$9.000</span></div><div class="desc">Ron, hojas de menta, azucar, lima, hielo, y soda</div></div>
+            <div class="item" data-tags="ron mojito blue lima curacao"><div class="item-top"><span class="name">Mojito Blue</span><span class="price">$9.000</span></div><div class="desc">Lima, Ron, Blue Curacao, hojas de menta y 7up</div></div>
+            <div class="item" data-tags="gin campari vermouth negroni"><div class="item-top"><span class="name">Negroni</span><span class="price">$9.000</span></div><div class="desc">Gin, campari y vermouth</div></div>
+            <div class="item" data-tags="gin spritz blue curacao"><div class="item-top"><span class="name">Ocean Spritz</span><span class="price">$9.000</span></div><div class="desc">Gin, Blue curacao, espumante y soda</div></div>
+            <div class="item" data-tags="vodka cafe ruso lebowski"><div class="item-top"><span class="name">Ruso Blanco</span><span class="price">$9.000</span></div><div class="desc">En honor al gran Lebowski: Vodka, crema de leche, hielo y licor de cafe</div></div>
+            <div class="item" data-tags="vodka frutal naranja durazno"><div class="item-top"><span class="name">Sex on the Beach</span><span class="price">$8.000</span></div><div class="desc">Jugo de naranja + vodka + licor de durazno + granadina</div></div>
+            <div class="item" data-tags="tequila frutal naranja sunrise"><div class="item-top"><span class="name">Tequila Sunrise</span><span class="price">$9.000</span></div><div class="desc">Tequila + jugo de naranja</div></div>
+            <div class="item" data-tags="vino malbec tinto verano"><div class="item-top"><span class="name">Tinto de Verano</span><span class="price">$8.000</span></div><div class="desc">Vino malbec, 7up y hielo</div></div>
+            <div class="item" data-tags="vodka energizante speed"><div class="item-top"><span class="name">Trago Largo Energizante</span><span class="price">$9.000</span></div><div class="desc">Vodka + speed</div></div>
+            <div class="item" data-tags="whisky whiscola pepsi"><div class="item-top"><span class="name">Whiscola</span><span class="price">$8.000</span></div></div>
+        </div>
+    </div>
+    <div class="menu-section">
+        <div class="section-title">Cervezas</div>
+        <div class="grid">
+            <div class="item" data-tags="cerveza patagonia"><div class="item-top"><span class="name">Chopp de Patagonia 300cc</span></div></div>
+            <div class="item" data-tags="cerveza stella"><div class="item-top"><span class="name">Chopp de Stella 300cc</span></div></div>
+            <div class="item" data-tags="cerveza corona porron"><div class="item-top"><span class="name">Corona Porron</span></div></div>
+            <div class="item" data-tags="cerveza quilmes lata"><div class="item-top"><span class="name">Lata de Quilmes</span></div></div>
+            <div class="item" data-tags="cerveza patagonia lata"><div class="item-top"><span class="name">Lata Patagonia 473</span></div></div>
+            <div class="item" data-tags="cerveza patagonia pinta"><div class="item-top"><span class="name">Pinta Patagonia 500cc</span></div></div>
+            <div class="item" data-tags="cerveza stella pinta"><div class="item-top"><span class="name">Pinta Stella 500 cc</span></div></div>
+            <div class="item" data-tags="cerveza quilmes lata"><div class="item-top"><span class="name">Quilmes Lata 473 cc</span></div></div>
+            <div class="item" data-tags="cerveza stella lata"><div class="item-top"><span class="name">Stella Artois Lata 473 cc</span></div></div>
+        </div>
+    </div>
+    <div class="menu-section">
+        <div class="section-title">Tragos Importados</div>
+        <div class="grid">
+            <div class="item" data-tags="ron malibu cola pepsi"><div class="item-top"><span class="name">Malibu Cola</span><span class="price">$9.000</span></div><div class="desc">Malibu + pepsi</div></div>
+            <div class="item" data-tags="ron malibu frutal punch naranja"><div class="item-top"><span class="name">Malibu Punch</span><span class="price">$9.000</span></div><div class="desc">Malibu + jugo de naranja</div></div>
+            <div class="item" data-tags="ron malibu frutal sunrise anana"><div class="item-top"><span class="name">Malibu Sunrise</span><span class="price">$9.000</span></div><div class="desc">Malibu, pulpa de anana, jugo de naranja y granadina</div></div>
+            <div class="item" data-tags="vodka absolut pepsi naranja"><div class="item-top"><span class="name">Trago Absolut</span><span class="price">$10.000</span></div><div class="desc">Con pepsi o jugo de naranja</div></div>
+            <div class="item" data-tags="ron bacardi pepsi"><div class="item-top"><span class="name">Trago Bacardi con Pepsi</span><span class="price">$9.000</span></div></div>
+            <div class="item" data-tags="gin beefeater tonic"><div class="item-top"><span class="name">Trago Beefeater Tonic</span><span class="price">$11.000</span></div></div>
+            <div class="item" data-tags="gin bombay tonic"><div class="item-top"><span class="name">Trago Bombay Tonic</span><span class="price">$11.000</span></div></div>
+            <div class="item" data-tags="whisky jack daniels pepsi"><div class="item-top"><span class="name">Trago Jack Daniels con Pepsi</span><span class="price">$12.000</span></div></div>
+            <div class="item" data-tags="aperitivo jagermeister jagger"><div class="item-top"><span class="name">Trago Jagermeister</span><span class="price">$11.000</span></div></div>
+            <div class="item" data-tags="gin tanqueray tonic"><div class="item-top"><span class="name">Trago Tanqueray Tonic</span><span class="price">$11.000</span></div></div>
+            <div class="item" data-tags="tequila cuervo sunrise frutal"><div class="item-top"><span class="name">Trago Tequila Cuervo Sunrise</span><span class="price">$10.000</span></div></div>
+        </div>
+    </div>
+
+    <div class="menu-section">
+        <div class="section-title">Caipis</div>
+        <div class="grid">
+            <div class="item" data-tags="vodka frutal caipi rojos"><div class="item-top"><span class="name">Caipi Frutos Rojos</span><span class="price">$9.500</span></div><div class="desc">Vodka, hielo, lima, frutos rojos y azucar</div></div>
+            <div class="item" data-tags="ron caipirinha cachaza lima"><div class="item-top"><span class="name">Caipirinha</span><span class="price">$9.000</span></div><div class="desc">Cachaza, lima, hielo y azucar</div></div>
+            <div class="item" data-tags="ron caipirissima lima"><div class="item-top"><span class="name">Caipirissima</span><span class="price">$9.000</span></div><div class="desc">Ron, lima, hielo y azucar</div></div>
+            <div class="item" data-tags="vodka caipiroshka lima"><div class="item-top"><span class="name">Caipiroshka</span><span class="price">$9.000</span></div><div class="desc">Vodka, hielo, lima y azucar</div></div>
+            <div class="item" data-tags="vino malbec caipiuva lima"><div class="item-top"><span class="name">Caipiuva</span><span class="price">$9.000</span></div><div class="desc">Vino malbec, hielo, lima y azucar</div></div>
+            <div class="item" data-tags="aperitivo jagger jaggerinha lima"><div class="item-top"><span class="name">Jaggerinha</span><span class="price">$11.000</span></div><div class="desc">Jaggermeister, lima y azucar</div></div>
+        </div>
+    </div>
+
+    <div class="cta-container">
+        <a href="https://menu.maxirest.com/408" class="btn-full-menu">Ver Menú de Comidas y Postres</a>
+    </div>
+
+    <footer>DISFRUTÁ CON MODERACIÓN • SNACK RISTREL</footer>
+</div>
+
+<script>
+    const searchInput = document.getElementById('itemSearch');
+    const pills = document.querySelectorAll('.pill');
+    const items = document.querySelectorAll('.item');
+    const sections = document.querySelectorAll('.menu-section');
+    const noResults = document.getElementById('noResults');
+
+    let currentFilter = 'all';
+
+    function filterMenu() {
+        const query = searchInput.value.toLowerCase();
+        let anyVisible = false;
+
+        items.forEach(item => {
+            const tags = item.getAttribute('data-tags') || "";
+            const content = item.innerText.toLowerCase();
+            
+            const matchesSearch = content.includes(query);
+            const matchesFilter = (currentFilter === 'all' || tags.includes(currentFilter));
+
+            if (matchesSearch && matchesFilter) {
+                item.classList.remove('hidden');
+                anyVisible = true;
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+
+        sections.forEach(sec => {
+            const visibleCount = sec.querySelectorAll('.item:not(.hidden)').length;
+            sec.classList.toggle('hidden', visibleCount === 0);
+        });
+
+        noResults.style.display = anyVisible ? 'none' : 'block';
+    }
+
+    searchInput.addEventListener('input', filterMenu);
+
+    pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            pills.forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            currentFilter = pill.getAttribute('data-filter');
+            filterMenu();
+        });
+    });
+</script>
+
+</body>
+</html>
