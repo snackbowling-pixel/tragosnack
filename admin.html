@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Carta de Tragos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Panel de Administración</h1>
+    </header>
+
+    <!-- LOGIN -->
+    <div id="loginView" class="login-card">
+        <h2>Iniciar sesión</h2>
+        <form id="loginForm">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" required autocomplete="username">
+
+            <label for="loginPassword">Contraseña</label>
+            <input type="password" id="loginPassword" required autocomplete="current-password">
+
+            <button type="submit" class="btn-primary">Entrar</button>
+            <div id="loginError" class="error-msg"></div>
+        </form>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="adminView" class="hidden">
+        <div class="admin-bar">
+            <span id="userInfo" class="dim"></span>
+            <div class="admin-bar-actions">
+                <a href="index.html" class="btn-link">Ver carta pública</a>
+                <button id="logoutBtn" class="btn-secondary">Cerrar sesión</button>
+            </div>
+        </div>
+
+        <div class="admin-actions">
+            <button id="addItemBtn" class="btn-primary">+ Agregar item</button>
+            <button id="reloadBtn" class="btn-secondary">Recargar</button>
+        </div>
+
+        <div id="adminStatus" class="status-msg"></div>
+
+        <div id="adminMenuContainer"></div>
+    </div>
+
+    <!-- MODAL: AGREGAR / EDITAR -->
+    <div id="itemModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h2 id="modalTitle">Nuevo item</h2>
+            <form id="itemForm">
+                <label for="itemSection">Sección</label>
+                <select id="itemSection" required></select>
+
+                <label for="itemName">Nombre</label>
+                <input type="text" id="itemName" required maxlength="120">
+
+                <label for="itemPrice">Precio <span class="dim small">(ej: 9.000 — dejar vacío si no aplica)</span></label>
+                <input type="text" id="itemPrice" maxlength="20" placeholder="9.000">
+
+                <label for="itemDescription">Descripción <span class="dim small">(opcional)</span></label>
+                <textarea id="itemDescription" rows="3" maxlength="300"></textarea>
+
+                <label for="itemTags">Tags <span class="dim small">(separados por espacio, ej: "gin tonic frutal")</span></label>
+                <input type="text" id="itemTags" maxlength="200" placeholder="gin tonic">
+
+                <div class="modal-actions">
+                    <button type="button" id="cancelModalBtn" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </div>
+                <div id="modalError" class="error-msg"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="admin.js"></script>
+
+</body>
+</html>
