@@ -42,6 +42,7 @@
 
         <div class="admin-actions">
             <button id="addItemBtn" class="btn-primary">+ Agregar item</button>
+            <button id="addSectionBtn" class="btn-secondary">+ Nueva sección</button>
             <button id="reloadBtn" class="btn-secondary">Recargar</button>
         </div>
 
@@ -75,6 +76,23 @@
                     <button type="submit" class="btn-primary">Guardar</button>
                 </div>
                 <div id="modalError" class="error-msg"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: SECCION -->
+    <div id="sectionModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h2 id="sectionModalTitle">Nueva sección</h2>
+            <form id="sectionForm">
+                <label for="sectionNameInput">Nombre de la sección</label>
+                <input type="text" id="sectionNameInput" required maxlength="60" placeholder="Ej: Sin alcohol">
+
+                <div class="modal-actions">
+                    <button type="button" id="cancelSectionModalBtn" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </div>
+                <div id="sectionModalError" class="error-msg"></div>
             </form>
         </div>
     </div>

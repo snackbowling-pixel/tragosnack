@@ -24,9 +24,18 @@ const itemTags = document.getElementById('itemTags');
 const cancelModalBtn = document.getElementById('cancelModalBtn');
 const modalError = document.getElementById('modalError');
 
+const sectionModal = document.getElementById('sectionModal');
+const sectionModalTitle = document.getElementById('sectionModalTitle');
+const sectionForm = document.getElementById('sectionForm');
+const sectionNameInput = document.getElementById('sectionNameInput');
+const cancelSectionModalBtn = document.getElementById('cancelSectionModalBtn');
+const sectionModalError = document.getElementById('sectionModalError');
+const addSectionBtn = document.getElementById('addSectionBtn');
+
 let sectionsCache = [];
 let itemsCache = [];
 let editingId = null;
+let editingSectionId = null;
 
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
@@ -131,7 +140,13 @@ function renderAdminMenu() {
         const items = itemsBySection[sec.id] || [];
         return `
             <div class="menu-section">
-                <div class="section-title">${escapeHtml(sec.name)}</div>
+                <div class="admin-section-header">
+                    <div class="section-title">${escapeHtml(sec.name)}</div>
+                    <div class="admin-section-header-actions">
+                        <button class="btn-edit" data-edit-section-id="${sec.id}">Editar sección</button>
+                        <button class="btn-danger" data-delete-section-id="${sec.id}" data-delete-section-name="${escapeHtml(sec.name)}" data-item-count="${items.length}">Borrar sección</button>
+                    </div>
+                </div>
                 <div class="grid">
                     ${items.map(renderAdminItem).join('') || '<div class="dim small">Sin items en esta sección.</div>'}
                 </div>
@@ -146,6 +161,16 @@ function renderAdminMenu() {
     });
     adminMenuContainer.querySelectorAll('[data-delete-id]').forEach(btn => {
         btn.addEventListener('click', () => deleteItem(btn.dataset.deleteId, btn.dataset.deleteName));
+    });
+    adminMenuContainer.querySelectorAll('[data-edit-section-id]').forEach(btn => {
+        btn.addEventListener('click', () => openEditSectionModal(btn.dataset.editSectionId));
+    });
+    adminMenuContainer.querySelectorAll('[data-delete-section-id]').forEach(btn => {
+        btn.addEventListener('click', () => deleteSection(
+            btn.dataset.deleteSectionId,
+            btn.dataset.deleteSectionName,
+            parseInt(btn.dataset.itemCount, 10) || 0
+        ));
     });
 }
 
@@ -262,6 +287,86 @@ async function deleteItem(id, name) {
         return;
     }
     showStatus('Item borrado.');
+    await loadMenu();
+}
+
+// ============ SECTIONS CRUD ============
+function openAddSectionModal() {
+    editingSectionId = null;
+    sectionModalTitle.textContent = 'Nueva sección';
+    sectionForm.reset();
+    sectionModalError.textContent = '';
+    sectionModal.classList.remove('hidden');
+    sectionNameInput.focus();
+}
+
+function openEditSectionModal(id) {
+    const sec = sectionsCache.find(s => s.id === id);
+    if (!sec) return;
+    editingSectionId = id;
+    sectionModalTitle.textContent = 'Editar sección';
+    sectionModalError.textContent = '';
+    sectionNameInput.value = sec.name;
+    sectionModal.classList.remove('hidden');
+    sectionNameInput.focus();
+    sectionNameInput.select();
+}
+
+function closeSectionModal() {
+    sectionModal.classList.add('hidden');
+    editingSectionId = null;
+}
+
+addSectionBtn.addEventListener('click', openAddSectionModal);
+cancelSectionModalBtn.addEventListener('click', closeSectionModal);
+sectionModal.addEventListener('click', (e) => {
+    if (e.target === sectionModal) closeSectionModal();
+});
+
+sectionForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    sectionModalError.textContent = '';
+    const submitBtn = sectionForm.querySelector('button[type=submit]');
+    submitBtn.disabled = true;
+
+    const name = sectionNameInput.value.trim();
+    let result;
+    if (editingSectionId) {
+        result = await sb.from('menu_sections').update({ name }).eq('id', editingSectionId);
+    } else {
+        const maxOrder = sectionsCache.reduce((m, s) => Math.max(m, s.sort_order || 0), 0);
+        result = await sb.from('menu_sections').insert({ name, sort_order: maxOrder + 10 });
+    }
+
+    submitBtn.disabled = false;
+
+    if (result.error) {
+        const msg = result.error.code === '23505'
+            ? 'Ya existe una sección con ese nombre.'
+            : 'Error al guardar: ' + result.error.message;
+        sectionModalError.textContent = msg;
+        console.error(result.error);
+        return;
+    }
+
+    closeSectionModal();
+    showStatus(editingSectionId ? 'Sección actualizada.' : 'Sección creada.');
+    await loadMenu();
+});
+
+async function deleteSection(id, name, itemCount) {
+    const warning = itemCount > 0
+        ? `¿Borrar la sección "${name}"?\n\nATENCIÓN: también se borrarán los ${itemCount} item(s) que contiene. Esta acción no se puede deshacer.`
+        : `¿Borrar la sección "${name}"? Esta acción no se puede deshacer.`;
+    if (!confirm(warning)) return;
+
+    const { error } = await sb.from('menu_sections').delete().eq('id', id);
+    if (error) {
+        showStatus('Error al borrar: ' + error.message, true);
+        console.error(error);
+        return;
+    }
+    showStatus('Sección borrada.');
     await loadMenu();
 }
 
