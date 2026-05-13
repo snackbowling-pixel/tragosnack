@@ -1,4 +1,11 @@
-const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+// Carta pública: usa fetch() directo a la REST API de Supabase
+// para evitar cargar el SDK completo (auth + realtime + storage)
+// que no se necesita acá. Resultado: menos JS, menos RAM, sin websockets.
+
+const SB_HEADERS = {
+    apikey: window.SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${window.SUPABASE_ANON_KEY}`
+};
 
 const searchInput = document.getElementById('itemSearch');
 const pills = document.querySelectorAll('.pill');
@@ -49,19 +56,19 @@ function renderMenu(sections, itemsBySection) {
     menuContainer.innerHTML = html;
 }
 
+async function fetchTable(name) {
+    const url = `${window.SUPABASE_URL}/rest/v1/${name}?select=*&order=sort_order.asc`;
+    const res = await fetch(url, { headers: SB_HEADERS });
+    if (!res.ok) throw new Error(`${name}: HTTP ${res.status}`);
+    return res.json();
+}
+
 async function loadMenu() {
     try {
-        const { data: sections, error: secErr } = await sb
-            .from('menu_sections')
-            .select('*')
-            .order('sort_order', { ascending: true });
-        if (secErr) throw secErr;
-
-        const { data: items, error: itemsErr } = await sb
-            .from('menu_items')
-            .select('*')
-            .order('sort_order', { ascending: true });
-        if (itemsErr) throw itemsErr;
+        const [sections, items] = await Promise.all([
+            fetchTable('menu_sections'),
+            fetchTable('menu_items')
+        ]);
 
         const itemsBySection = {};
         for (const it of items) {
