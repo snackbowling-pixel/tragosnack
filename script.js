@@ -1,4 +1,4 @@
-const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
 const searchInput = document.getElementById('itemSearch');
 const pills = document.querySelectorAll('.pill');
@@ -51,13 +51,13 @@ function renderMenu(sections, itemsBySection) {
 
 async function loadMenu() {
     try {
-        const { data: sections, error: secErr } = await supabase
+        const { data: sections, error: secErr } = await sb
             .from('menu_sections')
             .select('*')
             .order('sort_order', { ascending: true });
         if (secErr) throw secErr;
 
-        const { data: items, error: itemsErr } = await supabase
+        const { data: items, error: itemsErr } = await sb
             .from('menu_items')
             .select('*')
             .order('sort_order', { ascending: true });

@@ -1,4 +1,4 @@
-const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
 const loginView = document.getElementById('loginView');
 const adminView = document.getElementById('adminView');
@@ -46,7 +46,7 @@ function showStatus(msg, isError = false) {
 
 // ============ AUTH ============
 async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sb.auth.getSession();
     if (session) {
         showAdminView(session.user);
     } else {
@@ -72,7 +72,7 @@ loginForm.addEventListener('submit', async (e) => {
     const submitBtn = loginForm.querySelector('button[type=submit]');
     submitBtn.disabled = true;
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await sb.auth.signInWithPassword({
         email: loginEmail.value.trim(),
         password: loginPassword.value
     });
@@ -87,7 +87,7 @@ loginForm.addEventListener('submit', async (e) => {
 });
 
 logoutBtn.addEventListener('click', async () => {
-    await supabase.auth.signOut();
+    await sb.auth.signOut();
     showLoginView();
 });
 
@@ -95,7 +95,7 @@ logoutBtn.addEventListener('click', async () => {
 async function loadMenu() {
     adminMenuContainer.innerHTML = '<div id="loadingState">Cargando...</div>';
 
-    const { data: sections, error: secErr } = await supabase
+    const { data: sections, error: secErr } = await sb
         .from('menu_sections')
         .select('*')
         .order('sort_order', { ascending: true });
@@ -105,7 +105,7 @@ async function loadMenu() {
         return;
     }
 
-    const { data: items, error: itemsErr } = await supabase
+    const { data: items, error: itemsErr } = await sb
         .from('menu_items')
         .select('*')
         .order('sort_order', { ascending: true });
@@ -230,13 +230,13 @@ itemForm.addEventListener('submit', async (e) => {
 
     let result;
     if (editingId) {
-        result = await supabase.from('menu_items').update(payload).eq('id', editingId);
+        result = await sb.from('menu_items').update(payload).eq('id', editingId);
     } else {
         // sort_order: ultimo de la seccion + 10
         const sectionItems = itemsCache.filter(i => i.section_id === payload.section_id);
         const maxOrder = sectionItems.reduce((m, i) => Math.max(m, i.sort_order || 0), 0);
         payload.sort_order = maxOrder + 10;
-        result = await supabase.from('menu_items').insert(payload);
+        result = await sb.from('menu_items').insert(payload);
     }
 
     submitBtn.disabled = false;
@@ -255,7 +255,7 @@ itemForm.addEventListener('submit', async (e) => {
 // ============ DELETE ============
 async function deleteItem(id, name) {
     if (!confirm(`¿Borrar "${name}"? Esta acción no se puede deshacer.`)) return;
-    const { error } = await supabase.from('menu_items').delete().eq('id', id);
+    const { error } = await sb.from('menu_items').delete().eq('id', id);
     if (error) {
         showStatus('Error al borrar: ' + error.message, true);
         console.error(error);
