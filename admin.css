@@ -179,7 +179,8 @@ button { font-family: inherit; cursor: pointer; transition: 0.2s; }
     font-size: 1rem;
     font-family: inherit;
     padding: 0;
-    width: 5.5ch;
+    width: 7ch;
+    min-width: 60px;
     outline: none;
 }
 .price-input::placeholder { color: rgba(201, 166, 107, 0.4); }
@@ -269,7 +270,7 @@ button { font-family: inherit; cursor: pointer; transition: 0.2s; }
     background: rgba(255, 255, 255, 0.03);
     flex-shrink: 0;
 }
-.bulk-row-action .price-input { width: 6ch; }
+.bulk-row-action .price-input { width: 8ch; min-width: 70px; }
 .bulk-row-action .btn-primary {
     margin-top: 0;
     padding: 6px 12px;
