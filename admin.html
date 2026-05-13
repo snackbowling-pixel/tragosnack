@@ -43,6 +43,7 @@
         <div class="admin-actions">
             <button id="addItemBtn" class="btn-primary">+ Agregar item</button>
             <button id="addSectionBtn" class="btn-secondary">+ Nueva sección</button>
+            <button id="bulkPriceBtn" class="btn-secondary">Actualizar precios en masa</button>
             <button id="reloadBtn" class="btn-secondary">Recargar</button>
         </div>
 
@@ -77,6 +78,21 @@
                 </div>
                 <div id="modalError" class="error-msg"></div>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL: BULK PRICE UPDATE -->
+    <div id="bulkPriceModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h2>Actualizar precios en masa</h2>
+            <p class="dim small" style="margin-bottom: 18px;">
+                Items agrupados por precio actual. Cambiá el valor de un grupo y aplicás a todos los items de ese precio en un solo update.
+            </p>
+            <div id="bulkPriceList"></div>
+            <div class="modal-actions">
+                <button type="button" id="closeBulkPriceBtn" class="btn-secondary">Cerrar</button>
+            </div>
+            <div id="bulkPriceStatus" class="status-msg" style="text-align: right;"></div>
         </div>
     </div>
 

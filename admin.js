@@ -24,6 +24,12 @@ const itemTags = document.getElementById('itemTags');
 const cancelModalBtn = document.getElementById('cancelModalBtn');
 const modalError = document.getElementById('modalError');
 
+const bulkPriceBtn = document.getElementById('bulkPriceBtn');
+const bulkPriceModal = document.getElementById('bulkPriceModal');
+const bulkPriceList = document.getElementById('bulkPriceList');
+const closeBulkPriceBtn = document.getElementById('closeBulkPriceBtn');
+const bulkPriceStatus = document.getElementById('bulkPriceStatus');
+
 const sectionModal = document.getElementById('sectionModal');
 const sectionModalTitle = document.getElementById('sectionModalTitle');
 const sectionForm = document.getElementById('sectionForm');
@@ -172,10 +178,49 @@ function renderAdminMenu() {
             parseInt(btn.dataset.itemCount, 10) || 0
         ));
     });
+    adminMenuContainer.querySelectorAll('[data-price-id]').forEach(input => {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+            if (e.key === 'Escape') { input.value = input.dataset.original; input.blur(); }
+        });
+        input.addEventListener('blur', () => saveInlinePrice(input));
+    });
+}
+
+async function saveInlinePrice(input) {
+    const id = input.dataset.priceId;
+    const original = input.dataset.original;
+    const newVal = input.value.trim();
+    if (newVal === original) return;
+
+    input.classList.add('saving');
+    const payload = { price: newVal === '' ? null : newVal };
+    const { error } = await sb.from('menu_items').update(payload).eq('id', id);
+    input.classList.remove('saving');
+
+    if (error) {
+        showStatus('Error al guardar precio: ' + error.message, true);
+        input.value = original;
+        console.error(error);
+        return;
+    }
+
+    input.dataset.original = newVal;
+    const cached = itemsCache.find(i => i.id === id);
+    if (cached) cached.price = newVal === '' ? null : newVal;
+    input.classList.add('saved');
+    setTimeout(() => input.classList.remove('saved'), 1200);
+    showStatus('Precio actualizado.');
 }
 
 function renderAdminItem(item) {
-    const price = item.price ? `<span class="price">$${escapeHtml(item.price)}</span>` : '';
+    const priceVal = item.price ? escapeHtml(item.price) : '';
+    const price = `
+        <label class="price-edit" title="Editar precio">
+            <span class="price-prefix">$</span>
+            <input type="text" class="price-input" value="${priceVal}" data-price-id="${item.id}" data-original="${priceVal}" placeholder="—" maxlength="20" inputmode="decimal" />
+        </label>
+    `;
     const desc = item.description ? `<div class="desc">${escapeHtml(item.description)}</div>` : '';
     const tags = item.tags ? `<div class="tags-chip">#${escapeHtml(item.tags)}</div>` : '';
     return `
@@ -369,6 +414,99 @@ async function deleteSection(id, name, itemCount) {
     showStatus('Sección borrada.');
     await loadMenu();
 }
+
+// ============ BULK PRICE UPDATE ============
+function openBulkPriceModal() {
+    renderBulkPriceList();
+    bulkPriceStatus.textContent = '';
+    bulkPriceModal.classList.remove('hidden');
+}
+
+function closeBulkPriceModal() {
+    bulkPriceModal.classList.add('hidden');
+}
+
+function renderBulkPriceList() {
+    const groups = {};
+    for (const it of itemsCache) {
+        if (!it.price) continue;
+        (groups[it.price] = groups[it.price] || []).push(it);
+    }
+
+    const sorted = Object.keys(groups).sort((a, b) => {
+        const pa = parseFloat(a.replace('.', '')) || 0;
+        const pb = parseFloat(b.replace('.', '')) || 0;
+        return pa - pb;
+    });
+
+    if (sorted.length === 0) {
+        bulkPriceList.innerHTML = '<div class="dim small">No hay items con precio para agrupar.</div>';
+        return;
+    }
+
+    bulkPriceList.innerHTML = sorted.map(currentPrice => {
+        const items = groups[currentPrice];
+        const names = items.map(i => i.name).join(', ');
+        return `
+            <div class="bulk-row" data-current="${escapeHtml(currentPrice)}">
+                <div class="bulk-row-info">
+                    <div class="bulk-current">$${escapeHtml(currentPrice)} <span class="dim small">(${items.length} item${items.length === 1 ? '' : 's'})</span></div>
+                    <div class="bulk-names dim small" title="${escapeHtml(names)}">${escapeHtml(names)}</div>
+                </div>
+                <div class="bulk-row-action">
+                    <span class="price-prefix">$</span>
+                    <input type="text" class="price-input bulk-new-price" placeholder="${escapeHtml(currentPrice)}" maxlength="20" inputmode="decimal" />
+                    <button class="btn-primary bulk-apply">Aplicar</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    bulkPriceList.querySelectorAll('.bulk-row').forEach(row => {
+        const applyBtn = row.querySelector('.bulk-apply');
+        const input = row.querySelector('.bulk-new-price');
+        const apply = () => bulkApply(row.dataset.current, input.value.trim(), applyBtn);
+        applyBtn.addEventListener('click', apply);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); apply(); }
+        });
+    });
+}
+
+async function bulkApply(currentPrice, newPrice, btn) {
+    if (!newPrice || newPrice === currentPrice) {
+        bulkPriceStatus.textContent = 'Ingresá un precio distinto.';
+        bulkPriceStatus.style.color = '#e07070';
+        return;
+    }
+
+    const affected = itemsCache.filter(i => i.price === currentPrice).length;
+    if (!confirm(`Actualizar ${affected} item(s) de $${currentPrice} a $${newPrice}?`)) return;
+
+    btn.disabled = true;
+    btn.textContent = '...';
+    const { error } = await sb.from('menu_items').update({ price: newPrice }).eq('price', currentPrice);
+    btn.disabled = false;
+    btn.textContent = 'Aplicar';
+
+    if (error) {
+        bulkPriceStatus.textContent = 'Error: ' + error.message;
+        bulkPriceStatus.style.color = '#e07070';
+        console.error(error);
+        return;
+    }
+
+    bulkPriceStatus.textContent = `${affected} item(s) actualizado(s) de $${currentPrice} a $${newPrice}.`;
+    bulkPriceStatus.style.color = 'var(--gold)';
+    await loadMenu();
+    renderBulkPriceList();
+}
+
+bulkPriceBtn.addEventListener('click', openBulkPriceModal);
+closeBulkPriceBtn.addEventListener('click', closeBulkPriceModal);
+bulkPriceModal.addEventListener('click', (e) => {
+    if (e.target === bulkPriceModal) closeBulkPriceModal();
+});
 
 // ============ INIT ============
 if (window.SUPABASE_URL.startsWith('https://YOUR_PROJECT')) {

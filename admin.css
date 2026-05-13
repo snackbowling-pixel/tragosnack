@@ -154,8 +154,37 @@ button { font-family: inherit; cursor: pointer; transition: 0.2s; }
 .admin-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
 .admin-item .name { display: block; }
-.admin-item .price { display: inline-block; margin-left: 0; margin-top: 4px; }
 .admin-item .desc { margin-top: 4px; }
+
+/* PRECIO EDITABLE INLINE */
+.price-edit {
+    display: inline-flex;
+    align-items: baseline;
+    margin-top: 4px;
+    gap: 2px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: border-color 0.15s, background 0.15s;
+    cursor: text;
+}
+.price-edit:hover { border-color: rgba(201, 166, 107, 0.3); background: rgba(255, 255, 255, 0.02); }
+.price-edit:focus-within { border-color: var(--gold); background: rgba(255, 255, 255, 0.04); }
+.price-prefix { color: var(--gold); font-weight: 600; font-size: 1rem; }
+.price-input {
+    background: transparent;
+    border: none;
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 1rem;
+    font-family: inherit;
+    padding: 0;
+    width: 5.5ch;
+    outline: none;
+}
+.price-input::placeholder { color: rgba(201, 166, 107, 0.4); }
+.price-input.saving { opacity: 0.5; }
+.price-input.saved { color: #7dd87d; transition: color 0.3s; }
 .admin-item .tags-chip {
     font-size: 0.7rem;
     color: var(--dim);
@@ -208,6 +237,50 @@ button { font-family: inherit; cursor: pointer; transition: 0.2s; }
     color: var(--gold);
     margin-bottom: 15px;
     min-height: 1.2em;
+}
+
+/* BULK PRICE UPDATE */
+.bulk-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-wrap: wrap;
+}
+.bulk-row:last-child { border-bottom: none; }
+.bulk-row-info { flex: 1; min-width: 0; }
+.bulk-current { color: var(--gold); font-weight: 600; font-size: 0.95rem; }
+.bulk-names {
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 280px;
+}
+.bulk-row-action {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(201, 166, 107, 0.3);
+    background: rgba(255, 255, 255, 0.03);
+    flex-shrink: 0;
+}
+.bulk-row-action .price-input { width: 6ch; }
+.bulk-row-action .btn-primary {
+    margin-top: 0;
+    padding: 6px 12px;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 500px) {
+    .bulk-row { flex-direction: column; align-items: stretch; }
+    .bulk-row-action { justify-content: space-between; }
+    .bulk-names { max-width: none; white-space: normal; }
 }
 
 /* SECCION HEADER EN ADMIN */
