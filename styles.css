@@ -50,15 +50,23 @@ h1 { font-size: 1.6rem; letter-spacing: 5px; color: var(--gold); text-transform:
 
 #itemSearch:focus { border-color: var(--gold); box-shadow: 0 0 15px rgba(201, 166, 107, 0.2); }
 
+/* Una sola fila que se desliza de costado si no entra */
 .filter-pills {
     display: flex;
     gap: 8px;
-    justify-content: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
     margin-top: 15px;
 }
+.filter-pills::-webkit-scrollbar { display: none; }
+/* Centra la fila cuando entra completa; si no entra, arranca desde la izquierda */
+.pill:first-child { margin-left: auto; }
+.pill:last-child { margin-right: auto; }
 
 .pill {
+    flex-shrink: 0;
+    white-space: nowrap;
     padding: 8px 15px;
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.05);
@@ -114,4 +122,15 @@ h1 { font-size: 1.6rem; letter-spacing: 5px; color: var(--gold); text-transform:
 
 footer { text-align: center; padding-bottom: 60px; font-size: 0.7rem; color: var(--dim); letter-spacing: 2px; }
 
-@media (max-width: 600px) { .grid { grid-template-columns: 1fr; } .btn-full-menu { display: block; } }
+@media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+    .btn-full-menu { display: block; }
+    /* La fila llega hasta el borde de la pantalla y se desvanece a la derecha para que se note que sigue */
+    .filter-pills {
+        margin-left: -20px; margin-right: -20px;
+        padding: 0 20px;
+        -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
+        mask-image: linear-gradient(to right, #000 85%, transparent);
+    }
+    .pill:last-child { margin-right: 40px; }
+}
