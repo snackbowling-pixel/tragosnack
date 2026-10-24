@@ -15,6 +15,13 @@ const loadingState = document.getElementById('loadingState');
 
 let currentFilter = 'all';
 
+// Los títulos de sección quedan fijos justo debajo del buscador,
+// así que necesitan saber cuánto mide (cambia entre celular y compu)
+const controlsWrapper = document.querySelector('.controls-wrapper');
+new ResizeObserver(() => {
+    document.documentElement.style.setProperty('--controls-h', `${controlsWrapper.offsetHeight}px`);
+}).observe(controlsWrapper);
+
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str)
@@ -25,8 +32,19 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
+// Minúsculas y sin tildes, para que "limón" y "limon" coincidan
+function normalize(str) {
+    return String(str || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+// "10000" -> "10.000"; si no es un número entero, se deja como está
+function formatPrice(price) {
+    const raw = String(price).trim();
+    return /^\d+$/.test(raw) ? Number(raw).toLocaleString('es-AR') : raw;
+}
+
 function renderItem(item) {
-    const price = item.price ? `<span class="price">$${escapeHtml(item.price)}</span>` : '';
+    const price = item.price ? `<span class="price">$${escapeHtml(formatPrice(item.price))}</span>` : '';
     const desc = item.description ? `<div class="desc">${escapeHtml(item.description)}</div>` : '';
     return `
         <div class="item" data-tags="${escapeHtml(item.tags || '')}">
@@ -44,7 +62,7 @@ function renderMenu(sections, itemsBySection) {
         const items = itemsBySection[sec.id] || [];
         if (items.length === 0) return '';
         return `
-            <div class="menu-section">
+            <div class="menu-section" data-section="${escapeHtml(normalize(sec.name))}">
                 <div class="section-title">${escapeHtml(sec.name)}</div>
                 <div class="grid">
                     ${items.map(renderItem).join('')}
@@ -89,15 +107,17 @@ function attachFilter() {
     const sectionEls = document.querySelectorAll('.menu-section');
 
     function filterMenu() {
-        const query = searchInput.value.toLowerCase();
+        const query = normalize(searchInput.value);
         let anyVisible = false;
 
         items.forEach(item => {
-            const tags = item.getAttribute('data-tags') || '';
-            const content = item.innerText.toLowerCase();
+            const tags = normalize(item.getAttribute('data-tags'));
+            const section = item.closest('.menu-section').getAttribute('data-section') || '';
+            const content = normalize(item.innerText);
 
             const matchesSearch = content.includes(query);
-            const matchesFilter = (currentFilter === 'all' || tags.includes(currentFilter));
+            // El filtro mira los tags y también el nombre de la sección (ej. "Caipis")
+            const matchesFilter = (currentFilter === 'all' || tags.includes(currentFilter) || section.includes(currentFilter));
 
             if (matchesSearch && matchesFilter) {
                 item.classList.remove('hidden');
