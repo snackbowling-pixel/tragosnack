@@ -75,6 +75,28 @@ h1::after { background: linear-gradient(to right, var(--gold), transparent); mar
 .pill:first-child { margin-left: auto; }
 .pill:last-child { margin-right: auto; }
 
+/* Indicadores de que la fila sigue: flecha a la derecha y degradé a la izquierda.
+   script.js pone .can-right / .can-left según hacia dónde se pueda deslizar */
+.filter-scroller { position: relative; margin-top: 15px; }
+.filter-scroller .filter-pills { margin-top: 0; }
+.filter-scroller::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 40px;
+    background: linear-gradient(to right, var(--bg), transparent);
+    pointer-events: none; opacity: 0; transition: opacity 0.2s;
+}
+.filter-scroller.can-left::before { opacity: 1; }
+.scroll-hint {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 64px;
+    display: flex; align-items: center; justify-content: flex-end; padding: 0 10px 0 0;
+    border: 0; cursor: pointer; color: var(--gold);
+    background: linear-gradient(to right, transparent, var(--bg) 55%);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.filter-scroller.can-right .scroll-hint { opacity: 1; pointer-events: auto; }
+.filter-scroller.can-right .scroll-hint svg { animation: hint-nudge 1.6s ease-in-out 3; }
+@keyframes hint-nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+@media (prefers-reduced-motion: reduce) { .filter-scroller.can-right .scroll-hint svg { animation: none; } }
+
 .pill {
     flex-shrink: 0;
     white-space: nowrap;
@@ -136,12 +158,8 @@ footer { text-align: center; padding-bottom: 60px; font-size: 0.7rem; color: var
 @media (max-width: 600px) {
     .grid { grid-template-columns: 1fr; }
     .btn-full-menu { display: block; }
-    /* La fila llega hasta el borde de la pantalla y se desvanece a la derecha para que se note que sigue */
-    .filter-pills {
-        margin-left: -20px; margin-right: -20px;
-        padding: 0 20px;
-        -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
-        mask-image: linear-gradient(to right, #000 85%, transparent);
-    }
-    .pill:last-child { margin-right: 40px; }
+    /* La fila llega hasta el borde de la pantalla */
+    .filter-scroller { margin-left: -20px; margin-right: -20px; }
+    .filter-pills { padding-left: 20px; }
+    .pill:last-child { margin-right: 20px; }
 }

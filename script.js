@@ -22,6 +22,37 @@ new ResizeObserver(() => {
     document.documentElement.style.setProperty('--controls-h', `${controlsWrapper.offsetHeight}px`);
 }).observe(controlsWrapper);
 
+// Fila de filtros deslizable: muestra la flecha / el degradé solo
+// cuando hay más filtros para ese lado
+const filterScroller = document.querySelector('.filter-scroller');
+const filterRow = filterScroller.querySelector('.filter-pills');
+const scrollHint = filterScroller.querySelector('.scroll-hint');
+
+function updateScrollHints() {
+    const max = filterRow.scrollWidth - filterRow.clientWidth;
+    filterScroller.classList.toggle('can-left', filterRow.scrollLeft > 4);
+    filterScroller.classList.toggle('can-right', filterRow.scrollLeft < max - 4);
+}
+
+filterRow.addEventListener('scroll', updateScrollHints, { passive: true });
+new ResizeObserver(updateScrollHints).observe(filterRow);
+document.fonts.ready.then(updateScrollHints);
+
+scrollHint.addEventListener('click', () => {
+    filterRow.scrollBy({ left: filterRow.clientWidth * 0.6, behavior: 'smooth' });
+});
+
+// Al cargar, la fila se asoma un poco hacia la izquierda y vuelve, para que se note que se desliza
+function peekFilters() {
+    const canScroll = filterRow.scrollWidth > filterRow.clientWidth;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!canScroll || reduceMotion || filterRow.scrollLeft > 0) return;
+    filterRow.scrollTo({ left: 70, behavior: 'smooth' });
+    setTimeout(() => {
+        if (filterRow.scrollLeft <= 70) filterRow.scrollTo({ left: 0, behavior: 'smooth' });
+    }, 700);
+}
+
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str)
@@ -96,6 +127,7 @@ async function loadMenu() {
         loadingState.style.display = 'none';
         renderMenu(sections, itemsBySection);
         attachFilter();
+        setTimeout(peekFilters, 500);
     } catch (err) {
         console.error('Error loading menu:', err);
         loadingState.textContent = 'Error al cargar el menu. Reintenta en unos segundos.';
